@@ -1,0 +1,52 @@
+[
+  {
+    "Id": 1,
+    "Description": "Implementar nuevas funcionalidades",
+    "Status": "InProgress",
+    "CreationDate": "2024-02-14T20:06:00",
+    "DueDate": "2024-02-20T23:59:59",
+    "Priority": "Alta",
+    "LastModifiedDate": "2024-02-14T20:06:00",
+    "Categories": [
+      "Desarrollo",
+      "Sprint2"
+    ]
+  },
+  {
+    "Id": 2,
+    "Description": "Revisar documentaci\u00F3n del proyecto",
+    "Status": "Pending",
+    "CreationDate": "2024-02-14T20:06:00",
+    "DueDate": null,
+    "Priority": "Media",
+    "LastModifiedDate": "2024-02-14T20:06:00",
+    "Categories": [
+      "Documentaci\u00F3n"
+    ]
+  },
+  {
+    "Id": 3,
+    "Description": "Actualizar README del repositorio",
+    "Status": "Completed",
+    "CreationDate": "2024-02-14T20:06:00",
+    "DueDate": "2024-02-15T12:00:00",
+    "Priority": "Baja",
+    "LastModifiedDate": "2024-02-14T20:06:00",
+    "Categories": [
+      "Documentaci\u00F3n",
+      "GitHub"
+    ]
+  },
+  {
+    "Id": 4,
+    "Description": "Esto es una prueba despues del desastre",
+    "Status": "Pending",
+    "CreationDate": "2025-02-14T20:44:44.749571+01:00",
+    "DueDate": null,
+    "Priority": "Alta",
+    "LastModifiedDate": "2025-02-14T20:44:44.749572+01:00",
+    "Categories": [
+      "Descuentos"
+    ]
+  }
+]
