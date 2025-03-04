@@ -1,4 +1,4 @@
-﻿﻿using System.Text;
+﻿﻿﻿﻿using System.Text;
 using AIProject.Infrastructure;
 using AIProject.Interfaces;
 using AIProject.Services;
@@ -6,12 +6,25 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Builder;
 
+/// <summary>
+/// Punto de entrada principal de la aplicación.
+/// </summary>
+/// <remarks>
+/// Este archivo configura:
+/// - Servicios y dependencias
+/// - Autenticación JWT
+/// - Autorización basada en roles
+/// - Middleware de la aplicación
+/// - Pipeline de solicitudes HTTP
+/// </remarks>
+
+// Crear el builder de la aplicación web
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Agregar servicios al contenedor de dependencias
 builder.Services.AddControllers();
 
-// Configure JWT Authentication
+// Configurar autenticación JWT
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -33,20 +46,21 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configure Authorization
+// Configurar políticas de autorización basadas en roles
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
     options.AddPolicy("RequireUserRole", policy => policy.RequireRole("User", "Admin"));
 });
 
-// Register services
+// Registrar servicios en el contenedor de dependencias
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// Construir la aplicación
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -54,10 +68,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Add authentication middleware
+// Agregar middleware de autenticación y autorización
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
+// Iniciar la aplicación
 app.Run();

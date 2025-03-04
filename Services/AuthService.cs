@@ -13,12 +13,40 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AIProject.Services
 {
+    /// <summary>
+    /// Implementación del servicio de autenticación y autorización.
+    /// </summary>
+    /// <remarks>
+    /// Esta clase implementa la interfaz IAuthService y proporciona:
+    /// - Autenticación de usuarios mediante credenciales
+    /// - Registro de nuevos usuarios
+    /// - Generación y validación de tokens JWT
+    /// - Gestión segura de contraseñas mediante hashing
+    /// - Registro de eventos de seguridad
+    /// </remarks>
     public class AuthService : IAuthService
     {
+        /// <summary>
+        /// Configuración de la aplicación para acceder a los ajustes de JWT.
+        /// </summary>
         private readonly IConfiguration _configuration;
+        
+        /// <summary>
+        /// Repositorio para acceder a los datos de usuarios.
+        /// </summary>
         private readonly IUserRepository _userRepository;
+        
+        /// <summary>
+        /// Registrador de eventos de seguridad.
+        /// </summary>
         private readonly ISecurityLogger _securityLogger;
 
+        /// <summary>
+        /// Constructor que inicializa una nueva instancia del servicio de autenticación.
+        /// </summary>
+        /// <param name="configuration">Configuración de la aplicación</param>
+        /// <param name="userRepository">Repositorio de usuarios</param>
+        /// <param name="securityLogger">Registrador de eventos de seguridad</param>
         public AuthService(
             IConfiguration configuration,
             IUserRepository userRepository,
@@ -29,6 +57,19 @@ namespace AIProject.Services
             _securityLogger = securityLogger;
         }
 
+        /// <summary>
+        /// Autentica a un usuario con sus credenciales y genera un token JWT.
+        /// </summary>
+        /// <param name="loginDto">DTO con las credenciales del usuario</param>
+        /// <returns>DTO con el token JWT y datos del usuario, o null si la autenticación falla</returns>
+        /// <remarks>
+        /// Este método:
+        /// - Busca al usuario por su nombre de usuario
+        /// - Verifica la contraseña utilizando el hash almacenado
+        /// - Registra intentos de inicio de sesión fallidos
+        /// - Actualiza la fecha del último inicio de sesión
+        /// - Genera un token JWT para el usuario autenticado
+        /// </remarks>
         public async Task<AuthResponseDTO> LoginAsync(LoginDTO loginDto)
         {
             var user = await _userRepository.GetByUsernameAsync(loginDto.Username);
@@ -72,6 +113,19 @@ namespace AIProject.Services
             };
         }
 
+        /// <summary>
+        /// Registra un nuevo usuario en el sistema.
+        /// </summary>
+        /// <param name="registerDto">DTO con los datos del nuevo usuario</param>
+        /// <returns>DTO con el token JWT y datos del usuario, o null si el registro falla</returns>
+        /// <remarks>
+        /// Este método:
+        /// - Verifica que el nombre de usuario no exista
+        /// - Valida que las contraseñas coincidan
+        /// - Crea un hash seguro de la contraseña
+        /// - Crea y almacena el nuevo usuario
+        /// - Genera un token JWT para el usuario registrado
+        /// </remarks>
         public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO registerDto)
         {
             if (await UserExistsAsync(registerDto.Username))
@@ -116,16 +170,40 @@ namespace AIProject.Services
             };
         }
 
+        /// <summary>
+        /// Verifica si un nombre de usuario ya existe en el sistema.
+        /// </summary>
+        /// <param name="username">Nombre de usuario a verificar</param>
+        /// <returns>True si el usuario existe, False en caso contrario</returns>
         public async Task<bool> UserExistsAsync(string username)
         {
             return await _userRepository.ExistsByUsernameAsync(username);
         }
 
+        /// <summary>
+        /// Obtiene un usuario por su nombre de usuario.
+        /// </summary>
+        /// <param name="username">Nombre de usuario a buscar</param>
+        /// <returns>El usuario encontrado, o null si no existe</returns>
         public async Task<User> GetUserByUsernameAsync(string username)
         {
             return await _userRepository.GetByUsernameAsync(username);
         }
 
+        /// <summary>
+        /// Genera un token JWT para un usuario.
+        /// </summary>
+        /// <param name="user">Usuario para el que se generará el token</param>
+        /// <returns>Token JWT como string</returns>
+        /// <remarks>
+        /// El token incluye:
+        /// - Identificador del usuario
+        /// - Nombre de usuario
+        /// - Correo electrónico
+        /// - Rol del usuario
+        /// - Fecha de expiración (1 hora)
+        /// - Firma con clave simétrica HMAC-SHA512
+        /// </remarks>
         public string GenerateJwtToken(User user)
         {
             var claims = new List<Claim>
@@ -156,6 +234,17 @@ namespace AIProject.Services
             return tokenHandler.WriteToken(token);
         }
 
+        /// <summary>
+        /// Crea un hash seguro para una contraseña.
+        /// </summary>
+        /// <param name="password">Contraseña en texto plano</param>
+        /// <returns>Hash de la contraseña como string en Base64</returns>
+        /// <remarks>
+        /// Este método:
+        /// - Utiliza HMACSHA512 para generar un salt aleatorio
+        /// - Calcula el hash de la contraseña con el salt
+        /// - Combina el salt y el hash en un único string codificado en Base64
+        /// </remarks>
         private string CreatePasswordHash(string password)
         {
             using var hmac = new HMACSHA512();
@@ -170,6 +259,19 @@ namespace AIProject.Services
             return Convert.ToBase64String(hashBytes);
         }
 
+        /// <summary>
+        /// Verifica si una contraseña coincide con un hash almacenado.
+        /// </summary>
+        /// <param name="password">Contraseña en texto plano a verificar</param>
+        /// <param name="storedHash">Hash almacenado (salt + hash) en Base64</param>
+        /// <returns>True si la contraseña coincide, False en caso contrario</returns>
+        /// <remarks>
+        /// Este método:
+        /// - Decodifica el hash almacenado
+        /// - Extrae el salt (primeros 64 bytes)
+        /// - Calcula el hash de la contraseña proporcionada con el mismo salt
+        /// - Compara byte a byte el hash calculado con el hash almacenado
+        /// </remarks>
         private bool VerifyPasswordHash(string password, string storedHash)
         {
             var hashBytes = Convert.FromBase64String(storedHash);
